@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+:host {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --accent: #f59e0b;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --success: #22c55e;
+  --danger: #ef4444;
+}
+
+body { background-color: var(--bg-color); margin: 0; }
+
+.dashboard {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 30px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+h1 { margin: 0; font-size: 1.5rem; color: var(--accent); letter-spacing: 1px; }
+
+/* Griglia Ordini - Niente più tabelle! */
+.orders-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+.order-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #334155;
+  transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card.in-corso { border-left: 6px solid var(--accent); }
+.order-card.pronto { border-left: 6px solid var(--success); opacity: 0.7; }
+
+.order-id { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px; display: block; }
+.order-content { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
+
+/* Bottoni */
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-ready { background: var(--success); color: white; width: 100%; }
+.btn-ready:hover { background: #16a34a; transform: scale(1.02); }
+
+/* Gestione Menu - Tabella Pulita */
+.menu-manager {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 25px;
+  border: 1px solid #334155;
+}
+
+.form-add {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+input, select {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.btn-add { background: var(--accent); color: #000; }
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modern-table th { text-align: left; color: var(--text-dim); padding: 15px; border-bottom: 1px solid #334155; }
+.modern-table td { padding: 15px; border-bottom: 1px solid #334155; }
+
+.btn-del { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-del:hover { background: var(--danger); color: white; }

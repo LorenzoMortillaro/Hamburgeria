@@ -1,61 +1,59 @@
-<div style="padding: 20px; font-family: sans-serif;">
-  <h1>🍔 Pannello Gestione Hamburgeria</h1>
-
-  <hr>
+<div class="dashboard">
+  <header>
+    <h1>KITCHEN COMMAND CENTER 👨‍🍳</h1>
+    <div class="stats">Ordini attivi: {{ ordini.length }}</div>
+  </header>
 
   <!-- SEZIONE ORDINI -->
-  <h2>📋 Ordini in corso</h2>
-  <table border="1" style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-    <tr style="background: #f4f4f4;">
-      <th>ID</th>
-      <th>Dettagli Ordine</th>
-      <th>Stato</th>
-      <th>Azione</th>
-    </tr>
-    <tr *ngFor="let o of ordini">
-      <td>{{ o.id }}</td>
-      <td>{{ o.dettagli }}</td>
-      <td [style.color]="o.stato === 'pronto' ? 'green' : 'orange'">
-        <b>{{ o.stato }}</b>
-      </td>
-      <td>
-        <button *ngIf="o.stato === 'in corso'" (click)="preparaOrdine(o.id)">Segna come PRONTO</button>
-      </td>
-    </tr>
-  </table>
-
-  <hr>
+  <section>
+    <h2 style="color: var(--text-dim); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🔥 Ordini in Preparazione</h2>
+    <div class="orders-container">
+      <div class="order-card" *ngFor="let o of ordini" [ngClass]="o.stato">
+        <span class="order-id">ORDINE #{{ o.id }}</span>
+        <div class="order-content">{{ o.dettagli }}</div>
+        <button *ngIf="o.stato === 'in corso'" class="btn btn-ready" (click)="preparaOrdine(o.id)">SEGNA COME PRONTO</button>
+        <div *ngIf="o.stato === 'pronto'" style="color: var(--success); font-weight: bold; text-align: center; margin-top: 10px;">✓ COMPLETATO</div>
+      </div>
+    </div>
+  </section>
 
   <!-- SEZIONE GESTIONE MENU -->
-  <h2>🍴 Gestione Menù</h2>
-  
-  <!-- Form per aggiungere prodotti -->
-  <div style="background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>Aggiungi Prodotto</h3>
-    Nome: <input [(ngModel)]="nuovoProd.nome"> 
-    Prezzo: <input type="number" [(ngModel)]="nuovoProd.prezzo"> 
-    Cat: 
-    <select [(ngModel)]="nuovoProd.categoria">
-      <option value="panini">Panini</option>
-      <option value="bevande">Bevande</option>
-      <option value="contorni">Contorni</option>
-    </select>
-    <button (click)="aggiungiProdotto()">Salva nel Menù</button>
-  </div>
+  <section class="menu-manager">
+    <h2 style="margin-top: 0;">📦 Magazzino & Menù</h2>
+    
+    <div class="form-add">
+      <input [(ngModel)]="nuovoProd.nome" placeholder="Nome prodotto">
+      <input type="number" [(ngModel)]="nuovoProd.prezzo" placeholder="Prezzo (€)">
+      <input [(ngModel)]="nuovoProd.immagine" placeholder="URL Immagine (https://...)">
+      <select [(ngModel)]="nuovoProd.categoria">
+        <option value="panini">Panini</option>
+        <option value="bevande">Bevande</option>
+      </select>
+      <button class="btn btn-add" (click)="aggiungiProdotto()">AGGIUNGI AL MENU</button>
+    </div>
 
-  <!-- Lista prodotti esistenti -->
-  <table border="1" style="width: 100%; border-collapse: collapse;">
-    <tr style="background: #f4f4f4;">
-      <th>Nome</th>
-      <th>Prezzo</th>
-      <th>Categoria</th>
-      <th>Azione</th>
-    </tr>
-    <tr *ngFor="let p of prodotti">
-      <td>{{ p.nome }}</td>
-      <td>{{ p.prezzo | currency:'EUR' }}</td>
-      <td>{{ p.categoria }}</td>
-      <td><button (click)="cancellaProdotto(p.id)" style="color: red;">Elimina</button></td>
-    </tr>
-  </table>
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>ANTEPRIMA</th>
+          <th>NOME</th>
+          <th>CATEGORIA</th>
+          <th>PREZZO</th>
+          <th>AZIONI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of prodotti">
+          <td>
+            <img *ngIf="p.immagine" [src]="p.immagine" style="width: 60px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid #334155;">
+            <span *ngIf="!p.immagine" style="font-size: 0.7rem; color: var(--text-dim);">No img</span>
+          </td>
+          <td><strong>{{ p.nome }}</strong></td>
+          <td><span style="font-size: 0.8rem; background: #0f172a; padding: 3px 8px; border-radius: 5px;">{{ p.categoria }}</span></td>
+          <td>{{ p.prezzo | currency:'EUR' }}</td>
+          <td><button class="btn btn-del" (click)="cancellaProdotto(p.id)">Elimina</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </div>

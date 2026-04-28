@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class DataService {
   // ATTENZIONE: Qui devi mettere l'indirizzo della tua Codespace Backend sulla porta 5000
   // Lo trovi nella tab "Ports" vicino al terminale. Deve finire con .app.github.dev
-  private baseUrl = 'https://fictional-funicular-v6446j5r6xxjcx4x4-5000.app.github.dev'; 
+  private baseUrl = 'https://orange-train-r49945x7x69g2x456-5000.app.github.dev'; 
 
   constructor(private http: HttpClient) { }
 

@@ -3,25 +3,24 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 void main() {
-  runApp(const MaterialApp(
-    home: TotemHome(),
+  runApp(MaterialApp(
+    theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.orange),
+    home: const TotemHome(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
 class TotemHome extends StatefulWidget {
   const TotemHome({super.key});
-
   @override
   State<TotemHome> createState() => _TotemHomeState();
 }
 
 class _TotemHomeState extends State<TotemHome> {
-  // RICORDATI: Incolla qui l'URL corretto della tua porta 5000 (Backend)
-  final String apiUrl = "https://fictional-funicular-v6446j5r6xxjcx4x4-5000.app.github.dev";
-
-  List prodotti = []; 
-  List carrello = [];
+  // SOSTITUISCI CON IL TUO URL PORTA 5000
+  final String apiUrl = "https://orange-train-r49945x7x69g2x456-5000.app.github.dev";
+  List prodotti = [];
+  List carrello = []; // Lista di nomi prodotti (es: ["cheeseburger", "cheeseburger", "cola"])
 
   @override
   void initState() {
@@ -29,99 +28,179 @@ class _TotemHomeState extends State<TotemHome> {
     caricaMenu();
   }
 
-  // Scarica i prodotti dal database Flask
   Future<void> caricaMenu() async {
     try {
-      final response = await http.get(Uri.parse('$apiUrl/prodotti'));
-      if (response.statusCode == 200) {
-        if (!mounted) return; // Controllo di sicurezza per gli avvisi blu
-        setState(() {
-          prodotti = json.decode(response.body);
-        });
+      final res = await http.get(Uri.parse('$apiUrl/prodotti'));
+      if (res.statusCode == 200) {
+        if (!mounted) return;
+        setState(() => prodotti = json.decode(res.body));
       }
-    } catch (e) {
-      debugPrint("Errore caricamento menu: $e");
-    }
+    } catch (e) { debugPrint("Errore: $e"); }
   }
 
-  // Invia l'ordine a Flask
   Future<void> inviaOrdine() async {
     if (carrello.isEmpty) return;
-
-    String listaProdotti = carrello.join(", ");
-
     try {
-      final response = await http.post(
+      final res = await http.post(
         Uri.parse('$apiUrl/ordini'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'dettagli': listaProdotti}),
+        body: json.encode({'dettagli': carrello.join(", ")}),
       );
-
-      // Questo "if (!mounted) return" risolve l'avviso "Don't use BuildContext across async gaps"
       if (!mounted) return;
-
-      if (response.statusCode == 201) {
+      if (res.statusCode == 201) {
+        setState(() => carrello = []);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✅ Ordine inviato in cucina!')),
+          const SnackBar(content: Text('🍔 Ordine inviato! Prendi lo scontrino.'))
         );
-        setState(() {
-          carrello = []; 
-        });
       }
-    } catch (e) {
-      debugPrint("Errore invio ordine: $e");
-    }
+    } catch (e) { debugPrint("Errore: $e"); }
+  }
+
+  // Funzione per contare quante volte un prodotto è nel carrello
+  int quanteInCarrello(String nome) {
+    return carrello.where((item) => item == nome).length;
   }
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    int columns = width > 1200 ? 4 : (width > 800 ? 3 : 2);
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text("🍔 Totem Hamburgeria"),
-        backgroundColor: Colors.orange,
+        centerTitle: true,
+        backgroundColor: Colors.orange[800],
+        elevation: 8,
+        title: const Text("HAMBURGERIA L & A 🍔", 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: prodotti.length,
-              itemBuilder: (context, i) {
-                return ListTile(
-                  leading: const Icon(Icons.fastfood),
-                  title: Text(prodotti[i]['nome']),
-                  subtitle: Text("${prodotti[i]['prezzo']} €"),
-                  trailing: const Icon(Icons.add_circle, color: Colors.green),
-                  onTap: () {
-                    setState(() {
-                      carrello.add(prodotti[i]['nome']);
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: const Border(top: BorderSide(color: Colors.orange, width: 2))
-            ),
-            child: Column(
-              children: [
-                Text("Elementi nel carrello: ${carrello.length}", style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: carrello.isEmpty ? null : inviaOrdine,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    minimumSize: const Size.fromHeight(50)
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(25),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 20, 
+                    mainAxisSpacing: 20, 
+                    childAspectRatio: 0.82, 
                   ),
-                  child: const Text("CONFERMA ORDINE", style: TextStyle(color: Colors.white, fontSize: 18)),
+                  itemCount: prodotti.length,
+                  itemBuilder: (context, i) {
+                    String nomeProdotto = prodotti[i]['nome'];
+                    int quantita = quanteInCarrello(nomeProdotto);
+
+                    return Card(
+                      elevation: 3,
+                      clipBehavior: Clip.antiAlias,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // IMMAGINE
+                          Expanded(
+                            flex: 3,
+                            child: (prodotti[i]['immagine'] != null && prodotti[i]['immagine'] != "") 
+                            ? Image.network(prodotti[i]['immagine'], fit: BoxFit.cover,
+                                errorBuilder: (c, e, s) => Container(color: Colors.orange[50], child: const Icon(Icons.fastfood, color: Colors.orange)))
+                            : Container(color: Colors.orange[50], child: const Icon(Icons.fastfood, color: Colors.orange)),
+                          ),
+                          // INFO E CONTROLLI QUANTITÀ
+                          Expanded(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(nomeProdotto, 
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15), 
+                                    textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  Text("${prodotti[i]['prezzo']} €", 
+                                    style: TextStyle(color: Colors.orange[900], fontSize: 14, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  
+                                  // CONTROLLI + / -
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Tasto Meno (appare solo se c'è almeno 1 prodotto)
+                                      if (quantita > 0)
+                                        IconButton(
+                                          icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                                          onPressed: () => setState(() => carrello.remove(nomeProdotto)),
+                                        ),
+                                      
+                                      // Numero Quantità
+                                      if (quantita > 0)
+                                        Text("$quantita", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
+                                      // Tasto Più (Sempre presente)
+                                      IconButton(
+                                        icon: const Icon(Icons.add_circle, color: Colors.green, size: 28),
+                                        onPressed: () => setState(() => carrello.add(nomeProdotto)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          )
-        ],
+              ),
+              
+              // BARRA DI CONFERMA
+              if (carrello.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 30, left: 20, right: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.2), blurRadius: 15, spreadRadius: 2)]
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("${carrello.length} prodotti selezionati", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const Text("Scorri le card per modificare", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        ],
+                      ),
+                      const SizedBox(width: 30),
+                      ElevatedButton(
+                        onPressed: inviaOrdine,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[700], 
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                        ),
+                        child: const Text("CONFERMA ORDINE", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        onPressed: () => setState(() => carrello = []),
+                        icon: const Icon(Icons.delete_sweep, color: Colors.red),
+                        tooltip: "Svuota tutto",
+                      )
+                    ],
+                  ),
+                )
+            ],
+          ),
+        ),
       ),
     );
   }
